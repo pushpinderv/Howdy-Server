@@ -11,8 +11,13 @@ const db = require('knex')({
 	}
 });
 
-const app = express();
+const register = require('./controllers/register');
+const signIn = require('./controllers/signin');
+const profile = require('./controllers/profile');
+const chat = require('./controllers/chat');
+const contact = require('./controllers/contact');
 
+const app = express();
 app.use(express.json());
 app.use(cors());
 
@@ -20,81 +25,37 @@ app.get('/', (req, res) => {
 	res.send(database.users);
 })
 
-app.post('/signin', (req, res) => {
+app.post('/signin', (req, res) => {signIn.handleSignIn(req, res ,db, bcrypt)})
 
-	const { email, password } = req.body;
+app.post('/register', (req, res) => {register.handleRegister(req, res ,db, bcrypt)})
 
-	if(!email || !password) {
-		return res.status(400).json('incorrect form submussion');	
-	}
+app.get('/profile/:userId', (req, res) => {profile.handleProfileGet(req, res, db)})
 
-	db('login').select('email', 'hash')
-	.where('email', '=', email)
-	.then(data => {
-		const isValid = bcrypt.compareSync(password, data[0].hash);
-		if(isValid){
-			return db('users').select('*')
-				.where('email','=',email)
-				.then(user => {
-					res.json(user[0])
-				})
-				.catch(err => res.status(400).json('unable to find user'))
-		}
-		else{
-			res.status(400).json('wrong credentials')
-		}
-	})
-	.catch(err => res.status(400).json('wrong credentials'))
+//Chats
+
+//Get all conversations of authorised user 
+app.post('/chats', (req, res) => {
+	chat.createChat(req, res, db);
 })
 
-app.post('/register', (req, res) => {
-	const {email, name, password, confirmPassword} = req.body;
-
-	if(!email || !name || !password) {
-		return res.status(400).json('incorrect form submussion');	
-	}
-
-	const hash = bcrypt.hashSync(password, 10);
-	db.transaction(trx => {
-		trx.insert({
-			hash: hash,
-			email: email
-		})
-		.into('login')
-		.returning('email')
-		.then( loginEmail => {
-			return trx('users')
-			.returning('*')
-			.insert({
-				email: loginEmail[0],
-				name: name
-			})
-			.then(user => {
-				res.json(user[0]);
-			})
-		})
-		.then(trx.commit)
-		.catch(trx.rollback)
-	})
-	.catch(err => res.status(400).json('unable to register'))
+app.get('/chats', (req, res) => {
+	chat.getChats(req, res, db);
 })
 
-app.get('/profile/:userId', (req, res) => {
+app.get('/chats/:chatID', (req, res) => {
+	chat.getChat(req, res, db);
+})
 
-	const { userId } = req.params;
+//Contacts
 
-	db.select('*').from('users').where({
-		id: userId
-	})
-	.then(user => {
-		if(user.length){
-		res.json(user[0])
-	}
-		else{
-		res.status(400).json('Not found');	
-		}
-	})
-	.catch(err => res.status(400).json('Error getting user'));	
+//Get contacts of authorised user
+app.get('/contacts', (req, res) => {
+	contact.getContacts(req, res, db);
+})
+
+//Create contact
+app.post('/contacts', (req, res) => {
+	contact.createContact(req, res, db);
 })
 
 //For updating data
@@ -119,8 +80,8 @@ app.listen(3001, () => {
 
 / --> root
 
-/signin --> POST = success/fail
-/register --> POST = user
+/signin --> POST = success/fail -- DONE
+/register --> POST = user -- DONE
 
 /profile/:userId --> GET = user
 /chats/:userId --> GET = chats (Only dp and latest message for quick load)
