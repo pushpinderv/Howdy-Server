@@ -49,14 +49,14 @@ app.get('/chats/:chatID', (req, res) => {
 //Contacts
 
 //Get contacts of authorised user
-app.get('/contacts', (req, res) => {
+app.post('/contacts', (req, res) => {
 	contact.getContacts(req, res, db);
 })
 
 //Create contact
-app.post('/contacts', (req, res) => {
-	contact.createContact(req, res, db);
-})
+// app.post('/contacts', (req, res) => {
+// 	contact.createContact(req, res, db);
+// })
 
 //For updating data
 // app.put('/image' , (req, res) => {
