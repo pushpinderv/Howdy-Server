@@ -29,19 +29,21 @@ app.post('/signin', (req, res) => {signIn.handleSignIn(req, res ,db, bcrypt)})
 
 app.post('/register', (req, res) => {register.handleRegister(req, res ,db, bcrypt)})
 
-app.get('/profile/:userId', (req, res) => {profile.handleProfileGet(req, res, db)})
+app.get('/profile/:userID', (req, res) => {profile.handleProfileGet(req, res, db)})
 
 //Chats
 
-//Get all conversations of authorised user 
+//Create a new chat 
 app.post('/chats', (req, res) => {
 	chat.createChat(req, res, db);
 })
 
-app.get('/chats', (req, res) => {
+//Get all chats of a user 
+app.get('/:userID/chats', (req, res) => {
 	chat.getChats(req, res, db);
 })
 
+//Get a chat by its id
 app.get('/chats/:chatID', (req, res) => {
 	chat.getChat(req, res, db);
 })
@@ -49,14 +51,14 @@ app.get('/chats/:chatID', (req, res) => {
 //Contacts
 
 //Get contacts of authorised user
-app.post('/contacts', (req, res) => {
+app.get('/contacts/:userID', (req, res) => {
 	contact.getContacts(req, res, db);
 })
 
 //Create contact
-// app.post('/contacts', (req, res) => {
-// 	contact.createContact(req, res, db);
-// })
+app.put('/contacts/:userID', (req, res) => {
+	contact.createContact(req, res, db);
+})
 
 //For updating data
 // app.put('/image' , (req, res) => {

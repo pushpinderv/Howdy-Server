@@ -2,7 +2,9 @@
 
 // }
 const getContacts = (req, res, db) => {
-	const {userID} = req.body;
+	
+	const {userID} = req.params;
+	console.log('Contact:' + userID);
 
 	// db('users')
 	// .select(db.raw('hstore_to_json (contacts) contacts'))
@@ -31,11 +33,13 @@ const getContacts = (req, res, db) => {
 		LIMIT 1) t3 ON t1.id = t3.id`).then(data =>{
 		res.json(data['rows'])
 	})
-	.catch(err => res.status(400).json('unable to get contacts!'));;
+	.catch(err => res.status(400).json('unable to get contacts!'));
 }
 
 const createContact = (req, res, db) => {
-	const {userID, contactID, name} = req.body;
+
+	const {userID} = req.params;
+	const {contactID, name} = req.body;
 	// console.log(`UserId is ${userID}, Contact Id is ${contactID}, contact name is ${name}`);
 	let keyValuePair = `'"${contactID}" => "${name}"'`;
 	console.log(keyValuePair);
@@ -45,7 +49,6 @@ const createContact = (req, res, db) => {
 	.returning('contacts')
 	.then(contacts =>{res.json(contacts)})
 	.catch(err => res.status(400).json('unable to add contact!'));
-	// res.status(200).json('success');
 }
 
 module.exports = {
