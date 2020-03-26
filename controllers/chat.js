@@ -42,41 +42,50 @@ const createChat = (req, res, db) => {
 
 	let {otherParticipantID, requestorID} = req.body;
 
-	let otherParticipant;
+	db.transaction(trx => {
+			return trx.raw(`SELECT id, name, photo_url FROM users WHERE id = ${otherParticipantID}`)
+				.then(data => {
+					otherParticipant = data['rows'][0];
+					// console.log(otherParticipant);
+					if (otherParticipant.id === requestorID) {
+						throw new Error('Cannot chat with self');
+					}
+					return trx.raw(`SELECT chat_id FROM participants WHERE user_id = ${otherParticipantID}
+							INTERSECT
+							SELECT chat_id FROM participants WHERE user_id = ${requestorID}`)
+					.then(data => {
+						console.log('reached 0')
+						console.log(data['rows'])
+						if(data['rows'].length === 0)
+						{
+							console.log('reached 1');
+						//if data is empty continue
+						return trx.raw(`INSERT INTO chats DEFAULT VALUES RETURNING id`)
+						.then(data => {
+							//convo id
+							let id = data['rows'][0].id;
+							console.log(id); 
+							console.log('reached 2');
+							let query = `INSERT INTO participants (user_id, chat_id) VALUES (${requestorID}, ${id}), (${otherParticipantID}, ${id})`;
+							console.log(query);	
+							return trx.raw(query)
+								.then(data => {
+								res.json('Chat created!')
+							})
+						})
 
-	db.raw(`SELECT name, photo_url FROM users WHERE id = ${otherParticipantID}`)
-	.then(data => {otherParticipant = data['rows']})
-	.catch(err => console.log('Could not find user'));
-	//Return/end if error
 
-	if (otherParticipant.id === requestorID) {
-		console.log('Cannot chat with yourself');
-		//Return/end if true
-	}
+						}
+						else
+						//if conversation exists, redirect to /api/chats/:chatID
+						res.redirect(`/chats/${data['rows'][0].chat_id}`)
+					})
+				})
+			.then(trx.commit)
+			.catch(trx.rollback)	
+		})
+	.catch(err => res.status(400).json('unable to create chat'))
 
-	db.raw(`SELECT conversation_id FROM participants WHERE user_id = ${otherParticipantID}
-			INTERSECT
-			SELECT conversation_id FROM participants WHERE user_id = ${requestorID}`)
-	.then(data => {
-		console.log(data['rows'])
-		//if data is empty continue
-		//if conversation exists, redirect to /api/chats/:chatID
-	})
-	.catch(err => console.log('Could not find common chat'));
-
-	db.raw(`INSERT INTO conversations DEFAULT VALUES RETURNING id`)
-	.then(id => {console.log('Use id to create convo')})
-	.catch(err => console.log('Could not insert new chat'));
-
-	db.raw(`INSERT INTO participants (user_id, chat_id) VALUES
-			(${requestorID}, ${chat_id}),
-			(${otherParticipantID}, ${chat_id}))`)
-	.then(console.log)
-	.catch(err => console.log('Could not insert participants'));
-
-	/*
-		if all goes well, respond with relevant data
-	*/
 }
 
 const getChat = (req, res, db) => {

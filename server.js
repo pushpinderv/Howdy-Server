@@ -16,6 +16,7 @@ const signIn = require('./controllers/signin');
 const profile = require('./controllers/profile');
 const chat = require('./controllers/chat');
 const contact = require('./controllers/contact');
+const message = require('./controllers/message');
 
 const app = express();
 app.use(express.json());
@@ -30,6 +31,18 @@ app.post('/signin', (req, res) => {signIn.handleSignIn(req, res ,db, bcrypt)})
 app.post('/register', (req, res) => {register.handleRegister(req, res ,db, bcrypt)})
 
 app.get('/profile/:userID', (req, res) => {profile.handleProfileGet(req, res, db)})
+
+//Messages
+
+//To post a message to a chat
+app.post('/chats/:chatID/messages', (req, res) => {
+	message.createMessage(req, res, db);
+})
+
+//To get the messages from a chat
+app.get('/chats/:chatID/messages', (req, res) => {
+	message.getMessages(req, res, db);
+})
 
 //Chats
 
