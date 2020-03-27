@@ -57,7 +57,7 @@ app.get('/:userID/chats', (req, res) => {
 })
 
 //Get a chat by its id
-app.get('/chats/:chatID', (req, res) => {
+app.get('/:userID/chats/:chatID', (req, res) => {
 	chat.getChat(req, res, db);
 })
 
@@ -72,20 +72,6 @@ app.get('/contacts/:userID', (req, res) => {
 app.put('/contacts/:userID', (req, res) => {
 	contact.createContact(req, res, db);
 })
-
-//For updating data
-// app.put('/image' , (req, res) => {
-// 	const { id } = req.body;
-// 	db('users').where('id', '=', id)
-// 	.increment('entries', 1)
-// 	.returning('entries')
-// 	.then(entries => {
-// 		res.json(entries[0]);
-// 	})
-//  .catch(err => res.status(400).json('Failed'))
-// })
-
-// bcrypt.hash()
 
 app.listen(3001, () => {
 	console.log('Server running');

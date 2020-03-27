@@ -78,7 +78,7 @@ const createChat = (req, res, db) => {
 						}
 						else
 						//if conversation exists, redirect to /api/chats/:chatID
-						res.redirect(`/chats/${data['rows'][0].chat_id}`)
+						res.redirect(`${requestorID}/chats/${data['rows'][0].chat_id}`)
 					})
 				})
 			.then(trx.commit)
@@ -89,7 +89,31 @@ const createChat = (req, res, db) => {
 }
 
 const getChat = (req, res, db) => {
-	res.json('Get chat by id');
+
+	let {userID, chatID} = req.params;
+	let query = `SELECT
+			COALESCE(auth_user.messages_read_at < messages.created_at, false) AS has_unread_messages,
+			other_users.id,
+			other_users.name,
+			other_users.photo_url
+		FROM chats
+		LEFT JOIN messages ON chats.last_message_id = messages.id
+		INNER JOIN participants other_participants
+			ON other_participants.chat_id = chats.id
+				AND other_participants.user_id != ${userID}
+		INNER JOIN users other_users ON other_participants.user_id = other_users.id
+		INNER JOIN participants auth_user
+			ON auth_user.chat_id = chats.id
+				AND auth_user.user_id = ${userID}
+		WHERE chats.id = ${chatID}`;
+
+		db.raw(query)
+		.then(data =>{
+			res.json(data['rows'][0]);
+		})
+		.catch(err => res.status(400).json('unable to get chat'))
+
+
 }
 
 module.exports = {

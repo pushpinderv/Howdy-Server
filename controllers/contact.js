@@ -22,7 +22,7 @@ const getContacts = (req, res, db) => {
 		INNER JOIN
 		(SELECT id, email, photo_url from users) t2
 		ON t1.id = t2.id
-		FULL JOIN
+		LEFT JOIN
 		(SELECT
 		 messages.created_at as time_stamp, messages.user_id as id
 		FROM chats
