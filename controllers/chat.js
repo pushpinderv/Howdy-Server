@@ -10,7 +10,7 @@ const getChats = (req , res, db) => {
 			messages.content AS message,
 			messages.created_at AS time_stamp,
 			messages.user_id = ${userID} AS mine,
-			other_users.id AS participant_id,
+			other_users.id AS sender_id,
 			other_users.name AS name,
 			other_users.email AS email,
 			other_users.photo_url AS photo_url

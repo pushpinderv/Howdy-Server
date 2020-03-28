@@ -40,7 +40,7 @@ app.post('/chats/:chatID/messages', (req, res) => {
 })
 
 //To get the messages from a chat
-app.get('/chats/:chatID/messages', (req, res) => {
+app.get('/:userID/chats/:chatID/messages', (req, res) => {
 	message.getMessages(req, res, db);
 })
 
