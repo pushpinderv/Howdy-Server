@@ -2,7 +2,6 @@
 const getContacts = (req, res, db) => {
 	
 	const {userID} = req.params;
-	console.log('Contact:' + userID);
 
 	db.raw(
 		`SELECT 

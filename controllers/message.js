@@ -43,11 +43,12 @@ const getMessages = (req, res, db) => {
 
 }
 
-const createMessage = (req, res, db) => {
+const createMessage = (req, res, db, users, io) => {
 	let {chatID} = req.params;
 	let {userID, content} = req.body;
 	db.transaction(trx => {
 		let participantExistsQuery = `SELECT EXISTS (SELECT 1 FROM participants WHERE user_id = ${userID} AND chat_id = ${chatID})`;
+		console.log(participantExistsQuery);
 		return trx.raw(participantExistsQuery)
 				.then(data => {
 					let exists = data['rows'][0].exists;
@@ -64,7 +65,24 @@ const createMessage = (req, res, db) => {
 						let updateQuery = `UPDATE chats SET last_message_id = ${id}
 											WHERE id = ${chatID}`;
 						return trx.raw(updateQuery)
-						.then(data => {res.json('Message posted')})
+						.then(data => {
+							
+							res.json('Message posted')
+
+							let message = { 
+								"id" : id,
+								"content" : content,
+								"created_at" : created_at,
+								"mine" : true
+							};
+
+							//Send it to the sender
+							io.to(`${users[userID]}`).emit('chat-message', message);
+
+							//Send it to other participant[s]
+
+
+						})
 					})
 					}
 					else{

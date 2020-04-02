@@ -70,7 +70,7 @@ const createChat = (req, res, db) => {
 							console.log(query);	
 							return trx.raw(query)
 								.then(data => {
-								res.json('Chat created!')
+								res.json({ "chat_id" : id})
 							})
 						})
 

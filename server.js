@@ -22,9 +22,34 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.get('/', (req, res) => {
-	res.send(database.users);
-})
+const server = app.listen(3001, () => {
+	console.log('Server running');
+});
+
+//Socket logic follows
+//Connected socket list
+let users = [];
+
+const io = require('socket.io')(server);
+
+io.on('connection', (socket) => {
+
+	socket.on('client-joined', (userID) => {
+		console.log(`Client user id: ${userID} joined`)
+		users[userID] = socket.id;
+	});
+
+	socket.on('disconnect', () => {
+		let userID = users.indexOf(socket.id);
+		console.log(`Client user id: ${userID} left`)
+		delete users[userID];
+	});
+
+});
+
+// app.get('/', (req, res) => {
+// 	res.send(database.users);
+// })
 
 app.post('/signin', (req, res) => {signIn.handleSignIn(req, res ,db, bcrypt)})
 
@@ -36,7 +61,7 @@ app.get('/profile/:userID', (req, res) => {profile.handleProfileGet(req, res, db
 
 //To post a message to a chat
 app.post('/chats/:chatID/messages', (req, res) => {
-	message.createMessage(req, res, db);
+	message.createMessage(req, res, db, users, io);
 })
 
 //To get the messages from a chat
@@ -73,9 +98,7 @@ app.put('/contacts/:userID', (req, res) => {
 	contact.createContact(req, res, db);
 })
 
-app.listen(3001, () => {
-	console.log('Server running');
-});
+
 
 /*
 
