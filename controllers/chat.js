@@ -42,6 +42,8 @@ const createChat = (req, res, db) => {
 
 	let {otherParticipantID, requestorID} = req.body;
 
+	console.log(req.body);
+
 	db.transaction(trx => {
 			return trx.raw(`SELECT id, name, photo_url FROM users WHERE id = ${otherParticipantID}`)
 				.then(data => {
@@ -95,7 +97,8 @@ const getChat = (req, res, db) => {
 			COALESCE(auth_user.messages_read_at < messages.created_at, false) AS has_unread_messages,
 			other_users.id,
 			other_users.name,
-			other_users.photo_url
+			other_users.photo_url,
+			chats.id AS chat_id
 		FROM chats
 		LEFT JOIN messages ON chats.last_message_id = messages.id
 		INNER JOIN participants other_participants

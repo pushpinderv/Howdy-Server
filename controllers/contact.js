@@ -5,7 +5,7 @@ const getContacts = (req, res, db) => {
 
 	db.raw(
 		`SELECT 
-		name, email, photo_url, time_stamp, chat_id
+		t2.id AS user_id,t1.name AS name, email, photo_url, chat_id, time_stamp
 		FROM
 		(select cast((each(contacts)).key as int) AS id, (each(contacts)).value AS name from users where id = ${userID}) t1 
 		INNER JOIN
@@ -13,11 +13,17 @@ const getContacts = (req, res, db) => {
 		ON t1.id = t2.id
 		LEFT JOIN
 		(SELECT
-		messages.created_at as time_stamp, messages.user_id as id, messages.chat_id as chat_id
+		chats.id AS chat_id, other_participants.user_id AS id, messages.created_at AS time_stamp
 		FROM chats
-		INNER JOIN messages
-			ON messages.chat_id = chats.id AND messages.user_id != ${userID}
-		ORDER BY time_stamp DESC LIMIT 1) t3 ON t1.id = t3.id`)
+		LEFT JOIN messages ON chats.last_message_id = messages.id
+		INNER JOIN participants other_participants
+			ON other_participants.chat_id = chats.id
+				AND other_participants.user_id != ${userID}
+		INNER JOIN users other_users ON other_participants.user_id = other_users.id
+		INNER JOIN participants auth_user
+			ON auth_user.chat_id = chats.id
+				AND auth_user.user_id = ${userID}) t3 ON t1.id = t3.id
+				`)
 		.then(data =>{
 		res.json(data['rows'])
 		}
