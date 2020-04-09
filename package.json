@@ -22,7 +22,7 @@
   },
   "nodemonConfig": {
     "env": {
-      "DEBUG": "knex:tx"
+      "DEBUG": "knex:query"
     }
   }
 }

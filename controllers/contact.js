@@ -34,15 +34,49 @@ const getContacts = (req, res, db) => {
 const createContact = (req, res, db) => {
 
 	const {userID} = req.params;
-	const {contactID, name} = req.body;
-	let keyValuePair = `'"${contactID}" => "${name}"'`;
-	console.log(keyValuePair);
-	db('users')
-	.update('contacts', db.raw('contacts || ' + keyValuePair))
-	.where('id',userID)
-	.returning('contacts')
-	.then(contacts =>{res.json(contacts)})
-	.catch(err => res.status(400).json('unable to add contact!'));
+	const {contactEmail, contactName} = req.body;
+
+	db.transaction(trx => {
+		let contactIDQuery = `SELECT id from users where email = '${contactEmail}'`;
+		console.log(contactIDQuery);
+		return trx.raw(contactIDQuery)
+				.then(data => {
+					
+					// console.log(data);
+
+					//Find contact id from db in transaction and then create this key val pair
+					let contactID = data['rows'][0].id;
+					let numberID = Number(userID);
+
+					console.log('Contact id is:', contactID);
+					console.log('User id is:', numberID);
+
+					if(contactID)
+					{	
+					let keyValuePair = `'"${contactID}" => "${contactName}"'`;
+					console.log(keyValuePair);
+
+					return trx('users')
+						.update('contacts', trx.raw("COALESCE(contacts, '') || " + keyValuePair + ` where id = ${numberID}`))
+						.returning('contacts')
+						.then(contacts =>{
+							// res.json(contacts)
+							res.redirect(`/contacts/${userID}`)
+						})
+						.catch(err => console.error)
+					}
+
+					else
+					{
+						throw new Error('unable to find contact id');
+					}
+
+				})
+				.then(trx.commit)
+				.catch(trx.rollback)
+	})
+	.catch(err => {res.status(400).json('unable to add contact!')});
+
 }
 
 module.exports = {

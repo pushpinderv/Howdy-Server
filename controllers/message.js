@@ -66,21 +66,47 @@ const createMessage = (req, res, db, users, io) => {
 											WHERE id = ${chatID}`;
 						return trx.raw(updateQuery)
 						.then(data => {
-							
-							res.json('Message posted')
 
+							res.json('Message posted')
+							
 							let message = { 
 								"id" : id,
 								"content" : content,
 								"created_at" : created_at,
-								"mine" : true
+								"mine" : true,
+								"chat_id" : chatID
 							};
 
 							//Send it to the sender
 							io.to(`${users[userID]}`).emit('chat-message', message);
 
-							//Send it to other participant[s]
+							let participantIDQuery = `SELECT
+							other_participants.user_id AS id
+							FROM chats
+							LEFT JOIN messages ON chats.last_message_id = messages.id
+							INNER JOIN participants other_participants
+								ON other_participants.chat_id = chats.id
+									AND other_participants.user_id != ${userID}
+							INNER JOIN users other_users ON other_participants.user_id = other_users.id
+							INNER JOIN participants auth_user
+								ON auth_user.chat_id = chats.id
+									AND auth_user.user_id = ${userID}
+									WHERE chats.id = ${chatID}`;
 
+							return trx.raw(participantIDQuery)
+							.then(data => {
+									let participantID = data['rows'][0].id;
+
+									console.log('Other user id:',participantID);
+
+									
+									
+									message.mine = false;
+
+									//Send it to other participant[s]
+									io.to(`${users[participantID]}`).emit('chat-message', message);
+
+								});
 
 						})
 					})
