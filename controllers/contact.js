@@ -61,9 +61,9 @@ const createContact = (req, res, db) => {
 						.returning('contacts')
 						.then(contacts =>{
 							// res.json(contacts)
-							res.redirect(`/contacts/${userID}`)
+							// return res.redirect(`/contacts/${userID}`)
+							getContacts(req, res, db);
 						})
-						.catch(err => console.error)
 					}
 
 					else

@@ -81,6 +81,7 @@ const createChat = (req, res, db) => {
 						else
 						//if conversation exists, redirect to /api/chats/:chatID
 						res.redirect(`${requestorID}/chats/${data['rows'][0].chat_id}`)
+						getChats(req, res, db);
 					})
 				})
 			.then(trx.commit)
