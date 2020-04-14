@@ -1,3 +1,49 @@
+
+function getContactInfo (otherUserID, userID, db) {
+	return new Promise((resolve, reject) => {
+	let info = {
+		"name" : '',
+		"email" : ''
+	}
+
+	let emailQuery = `SELECT email FROM users WHERE id = ${otherUserID}`;
+	let contactNameQuery = `SELECT contacts -> '${otherUserID}' AS name FROM users WHERE id = ${userID}`;
+
+	db.transaction(trx => {
+		return trx.raw(emailQuery)
+			.then(data => {
+				let email = data['rows'][0].email;
+
+				if(email)
+				{
+					info.email = email;
+					// console.log('email is :', email);
+					return trx.raw(contactNameQuery)
+						.then(data => {
+
+							let contactName = data['rows'][0].name;
+							// console.log('name is :', contactName);
+							if(contactName)
+							{
+							info.name = contactName;
+							}
+							console.log('returned info is :',info);
+							resolve(info);
+							// console.log('info is :',info);
+						})
+				} 
+			})
+			.then(trx.commit)
+			.catch(trx.rollback)
+	})
+	.catch(err => {
+		reject(info);
+	})	
+
+})
+
+}
+
 const getMessages = (req, res, db) => {
 
 	let {chatID, userID} = req.params;
@@ -68,17 +114,6 @@ const createMessage = (req, res, db, users, io) => {
 						.then(data => {
 
 							res.json('Message posted')
-							
-							let message = { 
-								"id" : id,
-								"content" : content,
-								"created_at" : created_at,
-								"mine" : true,
-								"chat_id" : chatID
-							};
-
-							//Send it to the sender
-							io.to(`${users[userID]}`).emit('chat-message', message);
 
 							let participantIDQuery = `SELECT
 							other_participants.user_id AS id
@@ -95,16 +130,42 @@ const createMessage = (req, res, db, users, io) => {
 
 							return trx.raw(participantIDQuery)
 							.then(data => {
+
 									let participantID = data['rows'][0].id;
 
 									console.log('Other user id:',participantID);
 
-									
-									
-									message.mine = false;
+									let message = { 
+										"id" : id,
+										"content" : content,
+										"created_at" : created_at,
+										"mine" : true,
+										"chat_id" : chatID
+									};
 
-									//Send it to other participant[s]
-									io.to(`${users[participantID]}`).emit('chat-message', message);
+									//Send participant contact name and email to sender
+									getContactInfo(participantID, userID, db)
+									.then(info => {
+
+										message.email = info.email;
+										message.name = info.name;
+
+										//Send it to the sender
+										io.to(`${users[userID]}`).emit('chat-message', message);
+									})
+									.catch(err => {console.log('Socket error')});
+							
+									//Send sender email and contact name to participant
+									getContactInfo(userID, participantID, db)
+									.then(info => {
+										message.email = info.email;
+										message.name = info.name;
+										message.mine = false;
+
+										//Send it to other participant[s]
+										io.to(`${users[participantID]}`).emit('chat-message', message);
+									})
+									.catch(err => {console.log('Socket error')});
 
 								});
 
@@ -118,7 +179,7 @@ const createMessage = (req, res, db, users, io) => {
 				.then(trx.commit)
 				.catch(trx.rollback)
 	})
-	.catch(err => res.status(400).json('unable to post message'));
+	.catch(err => {console.log('Error is:', err); res.status(400).json('unable to post message')});
 }
 
 module.exports = {

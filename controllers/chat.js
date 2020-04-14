@@ -1,3 +1,5 @@
+
+
 const getChats = (req , res, db) => {
 	
 	const {userID} = req.params;
@@ -11,7 +13,7 @@ const getChats = (req , res, db) => {
 			messages.created_at AS time_stamp,
 			messages.user_id = ${userID} AS mine,
 			other_users.id AS sender_id,
-			other_users.name AS name,
+			contacts.name AS name,
 			other_users.email AS email,
 			other_users.photo_url AS photo_url
 		FROM chats
@@ -22,7 +24,10 @@ const getChats = (req , res, db) => {
 		INNER JOIN users other_users ON other_participants.user_id = other_users.id
 		INNER JOIN participants auth_user
 			ON auth_user.chat_id = chats.id
-				AND auth_user.user_id = ${userID}`
+				AND auth_user.user_id = ${userID}
+		LEFT JOIN 
+		(select cast((each(contacts)).key as int) AS id, (each(contacts)).value AS name from users where id = ${userID}) contacts
+			ON contacts.id = other_users.id`
 
 		let before = '';
 		if(req.query.before)
@@ -34,7 +39,9 @@ const getChats = (req , res, db) => {
 	query += ` ORDER BY messages.created_at DESC
 		LIMIT 25`
 
-	db.raw(query).then(data => res.json(data['rows'])).catch(err => res.status(400).json('unable to get chats!'));
+	db.raw(query)
+		.then(data => res.json(data['rows']))
+		.catch(err => res.status(400).json('unable to get chats!'));
 
 }
 
@@ -80,7 +87,7 @@ const createChat = (req, res, db) => {
 						}
 						else
 						//if conversation exists, redirect to /api/chats/:chatID
-						res.redirect(`${requestorID}/chats/${data['rows'][0].chat_id}`)
+						// res.redirect(`${requestorID}/chats/${data['rows'][0].chat_id}`)
 						getChats(req, res, db);
 					})
 				})

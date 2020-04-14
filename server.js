@@ -55,8 +55,6 @@ app.post('/signin', (req, res) => {signIn.handleSignIn(req, res ,db, bcrypt)})
 
 app.post('/register', (req, res) => {register.handleRegister(req, res ,db, bcrypt)})
 
-app.get('/profile/:userID', (req, res) => {profile.handleProfileGet(req, res, db)})
-
 //Messages
 
 //To post a message to a chat
@@ -98,7 +96,30 @@ app.put('/contacts/:userID', (req, res) => {
 	contact.createContact(req, res, db);
 })
 
+//Profile
 
+//Get full Profile Info
+app.get('/profile/:userID', (req, res) => {profile.handleProfileGet(req, res, db)})
+
+//Get Profile Pic
+app.get('/:userID/profile/photo', (req, res) => {
+	profile.getPhoto(req, res, db);
+})
+
+//Upload Profile Pic
+app.post('/:userID/profile/photo', (req, res) => {
+	profile.uploadPhoto(req, res, db);
+})
+
+//Get User Name
+app.get('/:userID/profile/name', (req, res) => {
+	profile.getName(req, res, db);
+})
+
+//Upload User Name
+app.post('/:userID/profile/name', (req, res) => {
+	profile.setName(req, res, db);
+})
 
 /*
 
