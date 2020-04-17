@@ -22,6 +22,9 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Public Folder
+app.use(express.static('./public'));
+
 const server = app.listen(3001, () => {
 	console.log('Server running');
 });
@@ -98,7 +101,7 @@ app.put('/contacts/:userID', (req, res) => {
 
 //Profile
 
-//Get full Profile Info
+//Get full Profile Info - deprecate if not used in app
 app.get('/profile/:userID', (req, res) => {profile.handleProfileGet(req, res, db)})
 
 //Get Profile Pic
