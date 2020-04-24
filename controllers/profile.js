@@ -1,20 +1,29 @@
 const multer = require('multer');
-const path = require('path');
 const fs = require('fs-extra');
 const constants = require('../constants');
+const path = require('path');
 
 // Set Storage Engine
 const storage = multer.diskStorage({
 	destination : (req, file, cb) => {
 		const {userID} = req.params;
 		let path = `C:/wamp64/www/howdy/profile_photos/${userID}/`;
-		fs.mkdir(path)
-			.then(() => {cb(null, path)})
-			.catch((err) => {cb(null, path)});
-		
+
+		fs.pathExists(path)
+  			.then(exists => {
+  				if(exists)
+  					fs.emptyDir(path)
+  						.then(() => {cb(null, path)})
+						.catch((err) => {cb(null, path)});
+  				else
+  					fs.mkdir(path)
+						.then(() => {cb(null, path)})
+						.catch((err) => {cb(null, path)});
+  			})
+					
 	},
 	filename : (req ,file, cb) => {
-		cb(null, file.fieldname + path.extname(file.originalname));
+		cb(null, file.fieldname + '-' + Date.now() + '.jpg');
 	}
 });
 
@@ -34,8 +43,8 @@ const uploadPhoto = (req, res, db) => {
 		}
 		else
 		{
-			console.log(req.file);
-			let url = `${constants.IMAGE_DIRECTORY_URL}/howdy/profile_photos/${userID}/image`
+			// console.log(req.file.filename);
+			let url = `${constants.IMAGE_DIRECTORY_URL}/howdy/profile_photos/${userID}/${path.basename(req.file.filename)}`
 			console.log(url);
 
             db.raw(`update "users" set "photo_url" = '${url}' where "id" = ${userID}`)
@@ -60,6 +69,26 @@ const getPhoto = (req, res, db) => {
 		.catch(err => res.status(400).json('Error getting profile photo'))
 }
 
+const getName = (req, res, db) => {
+	let {userID} = req.params;
+	db.raw(`SELECT name from users WHERE id = ${userID}`)
+		.then(data => {
+			console.log(data['rows'][0].name);
+			res.json(data['rows'][0].name);
+		})
+		.catch(err => res.status(400).json('Error getting profile name'))
+}
+
+const setName = (req, res, db) => {
+	let {userID} = req.params;
+	let {name} = req.body;
+	db.raw(`UPDATE users SET name = '${name}' WHERE id = ${userID}`)
+		.then(() => {
+			res.json(name);
+		})
+		.catch(err => res.status(400).json('Error setting profile name'))
+}
+
 const handleProfileGet = (req, res, db) => {
 
 	const { userId } = req.params;
@@ -81,5 +110,7 @@ const handleProfileGet = (req, res, db) => {
 module.exports = {
 	getPhoto : getPhoto,
 	uploadPhoto : uploadPhoto,
+	getName : getName,
+	setName : setName,
 	handleProfileGet : handleProfileGet
 }

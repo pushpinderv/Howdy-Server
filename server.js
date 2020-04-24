@@ -40,6 +40,7 @@ io.on('connection', (socket) => {
 	socket.on('client-joined', (userID) => {
 		console.log(`Client user id: ${userID} joined`)
 		users[userID] = socket.id;
+		
 	});
 
 	socket.on('disconnect', () => {
@@ -89,20 +90,30 @@ app.get('/:userID/chats/:chatID', (req, res) => {
 
 //Contacts
 
+//Get contact by ID
+app.get('/:userID/contacts/:contactID', (req, res) => {
+	contact.getContact(req, res, db);
+})
+
 //Get contacts of authorised user
-app.get('/contacts/:userID', (req, res) => {
+app.get('/:userID/contacts', (req, res) => {
 	contact.getContacts(req, res, db);
 })
 
 //Create contact
-app.put('/contacts/:userID', (req, res) => {
+app.post('/:userID/contacts', (req, res) => {
 	contact.createContact(req, res, db);
+})
+
+//Update contact
+app.put('/:userID/contacts', (req, res) => {
+	contact.updateContact(req, res, db);
 })
 
 //Profile
 
 //Get full Profile Info - deprecate if not used in app
-app.get('/profile/:userID', (req, res) => {profile.handleProfileGet(req, res, db)})
+app.get('/:userID/profile', (req, res) => {profile.handleProfileGet(req, res, db)})
 
 //Get Profile Pic
 app.get('/:userID/profile/photo', (req, res) => {
