@@ -17,6 +17,7 @@ const profile = require('./controllers/profile');
 const chat = require('./controllers/chat');
 const contact = require('./controllers/contact');
 const message = require('./controllers/message');
+const presence = require('./controllers/presence');
 
 const app = express();
 app.use(express.json());
@@ -40,13 +41,31 @@ io.on('connection', (socket) => {
 	socket.on('client-joined', (userID) => {
 		console.log(`Client user id: ${userID} joined`)
 		users[userID] = socket.id;
+
+		//For subscription to user updates
+		socket.on('subscribe', (data) => {socket.join(data.room)})
+		socket.on('unsubscribe', (data) => {socket.leave(data.room)})
+
+		//Broadcast client is online to subscribers of this client
+		socket.to(userID).emit('client-online', {status : true});
 		
+		//Store last_online : null in db
+		presence.updateLastOnline(null, userID, db);
+
 	});
 
 	socket.on('disconnect', () => {
 		let userID = users.indexOf(socket.id);
 		console.log(`Client user id: ${userID} left`)
 		delete users[userID];
+
+		//Store last_online : currentTime in db
+		let currentTime = (new Date()).toISOString();
+		presence.updateLastOnline(currentTime, userID, db);
+
+		//Broadcast client is offline to subscribers of this client
+		socket.to(userID).emit('client-online', {status : false , last_online : currentTime});
+
 	});
 
 });
@@ -122,7 +141,7 @@ app.get('/:userID/profile/photo', (req, res) => {
 
 //Upload Profile Pic
 app.post('/:userID/profile/photo', (req, res) => {
-	profile.uploadPhoto(req, res, db);
+	profile.uploadPhoto(req, res, db, socket);
 })
 
 //Get User Name
@@ -133,6 +152,13 @@ app.get('/:userID/profile/name', (req, res) => {
 //Upload User Name
 app.post('/:userID/profile/name', (req, res) => {
 	profile.setName(req, res, db);
+})
+
+//Presence
+
+//Last online
+app.get('/:userID/last-online', (req, res) => {
+	presence.getLastOnline(req, res, db);
 })
 
 /*

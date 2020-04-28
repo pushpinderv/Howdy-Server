@@ -32,7 +32,7 @@ const upload = multer({
 	storage : storage
 }).single('image');
 
-const uploadPhoto = (req, res, db) => {
+const uploadPhoto = (req, res, db, socket) => {
 
 	let {userID} = req.params;
 
@@ -51,6 +51,7 @@ const uploadPhoto = (req, res, db) => {
 			.then(()=>{
 				console.log('Success!!');
 				res.json({"url" : url})})
+				socket.to(userID).emit('profile-photo-updated', url)
 			.catch(err => res.status(400).json('Error storing profile photo'));
 
 			

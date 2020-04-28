@@ -4,11 +4,11 @@ const getContact = (contactID, req, res, db) => {
 
 	db.raw(
 		`SELECT 
-		t2.id AS user_id,t1.name AS name, email, photo_url, chat_id, time_stamp
+		t2.id AS user_id,t1.name AS name, email, photo_url, chat_id, time_stamp,last_online
 		FROM
 		(select cast((each(contacts)).key as int) AS id, (each(contacts)).value AS name from users where id = ${userID}) t1 
 		INNER JOIN
-		(SELECT id, email, photo_url from users) t2
+		(SELECT id, email, photo_url, last_online from users) t2
 		ON t1.id = t2.id
 		LEFT JOIN
 		(SELECT
@@ -37,11 +37,11 @@ const getContacts = (req, res, db) => {
 
 	db.raw(
 		`SELECT 
-		t2.id AS user_id,t1.name AS name, email, photo_url, chat_id, time_stamp
+		t2.id AS user_id,t1.name AS name, email, photo_url, chat_id, time_stamp, last_online
 		FROM
 		(select cast((each(contacts)).key as int) AS id, (each(contacts)).value AS name from users where id = ${userID}) t1 
 		INNER JOIN
-		(SELECT id, email, photo_url from users) t2
+		(SELECT id, email, photo_url, last_online from users) t2
 		ON t1.id = t2.id
 		LEFT JOIN
 		(SELECT

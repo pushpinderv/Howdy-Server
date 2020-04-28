@@ -14,8 +14,10 @@ const getChats = (req , res, db) => {
 			messages.user_id = ${userID} AS mine,
 			other_users.id AS sender_id,
 			contacts.name AS name,
+			other_users.id AS other_participant_id,
 			other_users.email AS email,
-			other_users.photo_url AS photo_url
+			other_users.photo_url AS photo_url,
+			other_users.last_online AS last_online
 		FROM chats
 		INNER JOIN messages ON chats.last_message_id = messages.id
 		INNER JOIN participants other_participants
