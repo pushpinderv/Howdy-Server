@@ -22,10 +22,11 @@
     "pg": "^7.18.1",
     "promise": "^8.1.0",
     "socket.io": "^2.3.0"
-  },
-  "nodemonConfig": {
-    "env": {
-      "DEBUG": "knex:query"
-    }
   }
+  // ,
+  // "nodemonConfig": {
+  //   "env": {
+  //     "DEBUG": "knex:query"
+  //   }
+  // }
 }

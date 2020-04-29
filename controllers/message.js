@@ -98,12 +98,11 @@ const createMessage = (req, res, db, users, io) => {
 		return trx.raw(participantExistsQuery)
 				.then(data => {
 					let exists = data['rows'][0].exists;
-					let insertQuery = `INSERT INTO messages (content, user_id, chat_id) VALUES
-					('${content}', ${userID}, ${chatID}) RETURNING id, created_at`;
 
 					if(exists)
 					{
-					return trx.raw(insertQuery)
+					return trx.raw(`INSERT INTO messages (content, user_id, chat_id) VALUES
+					(?, ${userID}, ${chatID}) RETURNING id, created_at`, [`${content}`])
 					.then(data => {
 						let id = data['rows'][0].id;
 						let created_at = data['rows'][0].created_at;

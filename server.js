@@ -43,8 +43,14 @@ io.on('connection', (socket) => {
 		users[userID] = socket.id;
 
 		//For subscription to user updates
-		socket.on('subscribe', (data) => {socket.join(data.room)})
-		socket.on('unsubscribe', (data) => {socket.leave(data.room)})
+		socket.on('subscribe', (data) => {
+			console.log(`Client ${userID} has joined room ${data.room}`)
+			socket.join(data.room)
+		})
+		socket.on('unsubscribe', (data) => {
+			console.log(`Client ${userID} left room ${data.room}`)
+			socket.leave(data.room)
+		})
 
 		//Broadcast client is online to subscribers of this client
 		socket.to(userID).emit('client-online', {status : true});
@@ -141,7 +147,7 @@ app.get('/:userID/profile/photo', (req, res) => {
 
 //Upload Profile Pic
 app.post('/:userID/profile/photo', (req, res) => {
-	profile.uploadPhoto(req, res, db, socket);
+	profile.uploadPhoto(req, res, db, io);
 })
 
 //Get User Name

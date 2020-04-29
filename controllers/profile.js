@@ -32,7 +32,7 @@ const upload = multer({
 	storage : storage
 }).single('image');
 
-const uploadPhoto = (req, res, db, socket) => {
+const uploadPhoto = (req, res, db, io) => {
 
 	let {userID} = req.params;
 
@@ -49,9 +49,13 @@ const uploadPhoto = (req, res, db, socket) => {
 
             db.raw(`update "users" set "photo_url" = '${url}' where "id" = ${userID}`)
 			.then(()=>{
-				console.log('Success!!');
-				res.json({"url" : url})})
-				socket.to(userID).emit('profile-photo-updated', url)
+					
+					console.log('Success!!');
+					res.json({"url" : url});
+					console.log(`Emitting to room ${userID}`);
+					io.to(userID).emit('profile-photo-updated', {room : userID, url : url});
+				}
+				)	
 			.catch(err => res.status(400).json('Error storing profile photo'));
 
 			
