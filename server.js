@@ -26,7 +26,7 @@ app.use(cors());
 // Public Folder
 app.use(express.static('./public'));
 
-const server = app.listen(3001, () => {
+const server = app.listen(process.env.PORT || 3001, () => {
 	console.log('Server running');
 });
 
