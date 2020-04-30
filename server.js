@@ -76,9 +76,9 @@ io.on('connection', (socket) => {
 
 });
 
-// app.get('/', (req, res) => {
-// 	res.send(database.users);
-// })
+app.get('/', (req, res) => {
+	res.json('Welcome');
+})
 
 app.post('/signin', (req, res) => {signIn.handleSignIn(req, res ,db, bcrypt)})
 
