@@ -2,23 +2,23 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 
-// const db = require('knex')({
-// 	client : 'pg',
-// 	connection : {
-// 		connectionString : process.env.DATABASE_URL,
-// 		ssl : true
-// 	}
-// });
-
 const db = require('knex')({
 	client : 'pg',
 	connection : {
-		host : '127.0.0.1',
-		user : 'postgres',
-		password : '9266',
-		database : 'howdy'
+		connectionString : process.env.DATABASE_URL,
+		ssl : true
 	}
 });
+
+// const db = require('knex')({
+// 	client : 'pg',
+// 	connection : {
+// 		host : '127.0.0.1',
+// 		user : 'postgres',
+// 		password : '9266',
+// 		database : 'howdy'
+// 	}
+// });
 
 const register = require('./controllers/register');
 const signIn = require('./controllers/signin');
