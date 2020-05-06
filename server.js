@@ -156,7 +156,8 @@ app.get('/:userID/profile/photo', (req, res) => {
 
 //Upload Profile Pic
 app.post('/:userID/profile/photo', (req, res) => {
-	profile.uploadPhoto(req, res, db, io);
+	// profile.uploadPhoto(req, res, db, io);
+	profile.uploadToCloud(req, res, db, io);
 })
 
 //Get User Name
