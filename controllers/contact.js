@@ -68,6 +68,15 @@ const createContact = (req, res, db) => {
 	const {userID} = req.params;
 	const {contactEmail, contactName} = req.body;
 
+	let valid = false;
+
+	if(contactName && contactEmail)
+		if(contactName.length && contactEmail.length)
+			valid = true;
+
+	if(!valid)
+		return res.status(400).json('Invalid data');	
+
 	db.transaction(trx => {
 		let contactIDQuery = `SELECT id from users where email = '${contactEmail}'`;
 		console.log(contactIDQuery);

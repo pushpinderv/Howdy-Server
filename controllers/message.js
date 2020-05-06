@@ -160,6 +160,7 @@ const createMessage = (req, res, db, users, io) => {
 										message.email = info.email;
 										message.name = info.name;
 										message.mine = false;
+										message.other_participant_id = userID;
 
 										//Send it to other participant[s]
 										io.to(`${users[participantID]}`).emit('chat-message', message);
