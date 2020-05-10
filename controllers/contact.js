@@ -89,6 +89,9 @@ const createContact = (req, res, db) => {
 					let contactID = data['rows'][0].id;
 					let numberID = Number(userID);
 
+					if(contactID === numberID)
+						return res.status(400).json('Cannot add yourself as a contact.');
+
 					console.log('Contact id is:', contactID);
 					console.log('User id is:', numberID);
 
