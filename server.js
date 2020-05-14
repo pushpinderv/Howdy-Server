@@ -2,23 +2,23 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 
-const db = require('knex')({
-	client : 'pg',
-	connection : {
-		connectionString : process.env.DATABASE_URL,
-		ssl : true
-	}
-});
-
 // const db = require('knex')({
 // 	client : 'pg',
 // 	connection : {
-// 		host : '127.0.0.1',
-// 		user : 'postgres',
-// 		password : '9266',
-// 		database : 'howdy'
+// 		connectionString : process.env.DATABASE_URL,
+// 		ssl : true
 // 	}
 // });
+
+const db = require('knex')({
+	client : 'pg',
+	connection : {
+		host : '127.0.0.1',
+		user : 'postgres',
+		password : '9266',
+		database : 'howdy'
+	}
+});
 
 const register = require('./controllers/register');
 const signIn = require('./controllers/signin');
@@ -106,6 +106,16 @@ app.get('/:userID/chats/:chatID/messages', (req, res) => {
 })
 
 //Chats
+
+//Update messages read at for a chat
+app.post('/:userID/chats/:chatID/read-messages', (req, res) => {
+
+	const {userID, chatID} = req.params;
+	message.updateMessagesReadAt(userID, chatID, db)
+		.then(() => {return res.json('Read message successfully')})
+		.catch((err) => {return res.status(400).json('Unable to read message')});
+		
+})
 
 //Create a new chat 
 app.post('/chats', (req, res) => {

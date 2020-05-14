@@ -1,3 +1,11 @@
+function updateMessagesReadAt(userID, chatID, db) {
+
+	return db.raw(`
+		UPDATE participants SET messages_read_at = now()
+		WHERE user_id = ${userID} AND chat_id = ${chatID}
+	`);
+
+}
 
 function getContactInfo (otherUserID, userID, db) {
 	return new Promise((resolve, reject) => {
@@ -75,6 +83,7 @@ const getMessages = (req, res, db) => {
 					{
 						return trx.raw(query)
 						.then(data => {
+							
 							res.json(data['rows']);
 						})
 					}
@@ -142,6 +151,9 @@ const createMessage = (req, res, db, users, io) => {
 										"chat_id" : chatID
 									};
 
+									//Update messages read at
+									updateMessagesReadAt(userID, chatID, db);
+
 									//Send participant contact name and email to sender
 									getContactInfo(participantID, userID, db)
 									.then(info => {
@@ -184,5 +196,6 @@ const createMessage = (req, res, db, users, io) => {
 
 module.exports = {
 	getMessages : getMessages,
-	createMessage : createMessage
+	createMessage : createMessage,
+	updateMessagesReadAt : updateMessagesReadAt
 }

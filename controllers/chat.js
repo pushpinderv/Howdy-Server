@@ -11,6 +11,7 @@ const getChats = (req , res, db) => {
 			messages.id AS message_id,
 			messages.content AS message,
 			messages.created_at AS time_stamp,
+			auth_user.messages_read_at AS read_at,
 			messages.user_id = ${userID} AS mine,
 			other_users.id AS sender_id,
 			contacts.name AS name,
