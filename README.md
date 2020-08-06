@@ -1,2 +1,2 @@
 # Howdy-Server
-The backend for Howdy
+The backend server for Howdy-Messenger, written in NodeJS. Uses PostgreSQL as the database.
